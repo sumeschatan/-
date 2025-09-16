@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แต้มบุญ - ระบบจัดการคะแนน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <div class="text-2xl">🏆</div>
+                    <h1 class="text-xl font-bold">ระบบแต้มบุญ</h1>
+                </div>
+                <div class="flex space-x-4">
+                    <button id="homeBtn" class="px-4 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-all">
+                        🏠 หน้าหลัก
+                    </button>
+                    <button id="manageBtn" class="px-4 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-all">
+                        ⚙️ จัดการ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home Page -->
+    <div id="homePage" class="max-w-6xl mx-auto px-4 py-8">
+        <!-- Total Score Card -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 card-hover">
+            <div class="text-center">
+                <div class="text-4xl mb-2">✨</div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">คะแนนรวมทั้งหมด</h2>
+                <div id="totalScore" class="text-5xl font-bold text-purple-600">0</div>
+                <p class="text-gray-600 mt-2">แต้มบุญสะสม</p>
+            </div>
+        </div>
+
+        <!-- Rankings -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                    🏅 อันดับสมาชิก
+                </h2>
+                <div class="text-sm text-gray-500">
+                    จำนวนสมาชิก: <span id="memberCount">0</span> คน
+                </div>
+            </div>
+            <div id="rankingList" class="space-y-4">
+                <!-- Rankings will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Page -->
+    <div id="managePage" class="max-w-6xl mx-auto px-4 py-8 hidden">
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Add Member Card -->
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    👤 เพิ่มสมาชิกใหม่
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อสมาชิก</label>
+                        <input type="text" id="newMemberName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="กรอกชื่อสมาชิก">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">รูปโปรไฟล์ (อีโมจิ)</label>
+                        <div class="grid grid-cols-6 gap-2 mb-2">
+                            <button type="button" class="profile-emoji text-2xl p-2 border rounded hover:bg-gray-100" data-emoji="👤">👤</button>
+                            <button type="button" class="profile-emoji text-2xl p-2 border rounded hover:bg-gray-100" data-emoji="👨">👨</button>
+                            <button type="button" class="profile-emoji text-2xl p-2 border rounded hover:bg-gray-100" data-emoji="👩">👩</button>
+                            <button type="button" class="profile-emoji text-2xl p-2 border rounded hover:bg-gray-100" data-emoji="🧑">🧑</button>
+                            <button type="button" class="profile-emoji text-2xl p-2 border rounded hover:bg-gray-100" data-emoji="👦">👦</button>
+                            <button type="button" class="profile-emoji text-2xl p-2 border rounded hover:bg-gray-100" data-emoji="👧">👧</button>
+                        </div>
+                        <input type="text" id="selectedEmoji" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="หรือพิมพ์อีโมจิเอง" value="👤">
+                    </div>
+                    <button id="addMemberBtn" class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors font-medium">
+                        ➕ เพิ่มสมาชิก
+                    </button>
+                </div>
+            </div>
+
+            <!-- Manage Points Card -->
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    ⚡ จัดการแต้มบุญ
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">เลือกสมาชิก</label>
+                        <select id="memberSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="">เลือกสมาชิก</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">จำนวนแต้ม</label>
+                        <input type="number" id="pointsInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="กรอกจำนวนแต้ม">
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="addPointsBtn" class="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium">
+                            ➕ เพิ่มแต้ม
+                        </button>
+                        <button id="subtractPointsBtn" class="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors font-medium">
+                            ➖ ลดแต้ม
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Member List -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mt-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                📋 รายชื่อสมาชิกทั้งหมด
+            </h2>
+            <div id="memberList" class="space-y-3">
+                <!-- Member list will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let members = JSON.parse(localStorage.getItem('meritMembers')) || [];
+
+        // DOM elements
+        const homeBtn = document.getElementById('homeBtn');
+        const manageBtn = document.getElementById('manageBtn');
+        const homePage = document.getElementById('homePage');
+        const managePage = document.getElementById('managePage');
+        const totalScore = document.getElementById('totalScore');
+        const memberCount = document.getElementById('memberCount');
+        const rankingList = document.getElementById('rankingList');
+        const memberList = document.getElementById('memberList');
+        const memberSelect = document.getElementById('memberSelect');
+
+        // Navigation
+        homeBtn.addEventListener('click', () => showPage('home'));
+        manageBtn.addEventListener('click', () => showPage('manage'));
+
+        function showPage(page) {
+            if (page === 'home') {
+                homePage.classList.remove('hidden');
+                managePage.classList.add('hidden');
+                homeBtn.classList.add('bg-white', 'bg-opacity-30');
+                manageBtn.classList.remove('bg-white', 'bg-opacity-30');
+                updateHomePage();
+            } else {
+                homePage.classList.add('hidden');
+                managePage.classList.remove('hidden');
+                manageBtn.classList.add('bg-white', 'bg-opacity-30');
+                homeBtn.classList.remove('bg-white', 'bg-opacity-30');
+                updateManagePage();
+            }
+        }
+
+        // Profile emoji selection
+        document.querySelectorAll('.profile-emoji').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('selectedEmoji').value = btn.dataset.emoji;
+                document.querySelectorAll('.profile-emoji').forEach(b => b.classList.remove('bg-purple-100', 'border-purple-500'));
+                btn.classList.add('bg-purple-100', 'border-purple-500');
+            });
+        });
+
+        // Add member
+        document.getElementById('addMemberBtn').addEventListener('click', () => {
+            const name = document.getElementById('newMemberName').value.trim();
+            const emoji = document.getElementById('selectedEmoji').value.trim();
+
+            if (!name) {
+                alert('กรุณากรอกชื่อสมาชิก');
+                return;
+            }
+
+            if (members.find(m => m.name === name)) {
+                alert('มีสมาชิกชื่อนี้อยู่แล้ว');
+                return;
+            }
+
+            const newMember = {
+                id: Date.now(),
+                name: name,
+                emoji: emoji || '👤',
+                points: 0
+            };
+
+            members.push(newMember);
+            saveData();
+            
+            // Clear form
+            document.getElementById('newMemberName').value = '';
+            document.getElementById('selectedEmoji').value = '👤';
+            document.querySelectorAll('.profile-emoji').forEach(b => b.classList.remove('bg-purple-100', 'border-purple-500'));
+            document.querySelector('[data-emoji="👤"]').classList.add('bg-purple-100', 'border-purple-500');
+
+            updateManagePage();
+            alert('เพิ่มสมาชิกเรียบร้อยแล้ว!');
+        });
+
+        // Points management
+        document.getElementById('addPointsBtn').addEventListener('click', () => updatePoints(true));
+        document.getElementById('subtractPointsBtn').addEventListener('click', () => updatePoints(false));
+
+        function updatePoints(isAdd) {
+            const memberId = parseInt(document.getElementById('memberSelect').value);
+            const points = parseInt(document.getElementById('pointsInput').value);
+
+            if (!memberId) {
+                alert('กรุณาเลือกสมาชิก');
+                return;
+            }
+
+            if (!points || points <= 0) {
+                alert('กรุณากรอกจำนวนแต้มที่ถูกต้อง');
+                return;
+            }
+
+            const member = members.find(m => m.id === memberId);
+            if (member) {
+                if (isAdd) {
+                    member.points += points;
+                } else {
+                    member.points = Math.max(0, member.points - points);
+                }
+                
+                saveData();
+                updateManagePage();
+                document.getElementById('pointsInput').value = '';
+                
+                const action = isAdd ? 'เพิ่ม' : 'ลด';
+                alert(`${action}แต้มให้ ${member.name} เรียบร้อยแล้ว!`);
+            }
+        }
+
+        // Delete member
+        function deleteMember(id) {
+            if (confirm('คุณแน่ใจหรือไม่ที่จะลบสมาชิกคนนี้?')) {
+                members = members.filter(m => m.id !== id);
+                saveData();
+                updateManagePage();
+                alert('ลบสมาชิกเรียบร้อยแล้ว!');
+            }
+        }
+
+        // Edit member emoji
+        function editMemberEmoji(id) {
+            const member = members.find(m => m.id === id);
+            if (member) {
+                const newEmoji = prompt('กรอกอีโมจิใหม่:', member.emoji);
+                if (newEmoji !== null && newEmoji.trim()) {
+                    member.emoji = newEmoji.trim();
+                    saveData();
+                    updateManagePage();
+                }
+            }
+        }
+
+        // Update home page
+        function updateHomePage() {
+            const total = members.reduce((sum, member) => sum + member.points, 0);
+            totalScore.textContent = total.toLocaleString();
+            memberCount.textContent = members.length;
+
+            // Sort members by points (descending)
+            const sortedMembers = [...members].sort((a, b) => b.points - a.points);
+
+            rankingList.innerHTML = '';
+            sortedMembers.forEach((member, index) => {
+                const rank = index + 1;
+                let rankIcon = '🏅';
+                let rankColor = 'text-gray-600';
+                
+                if (rank === 1) {
+                    rankIcon = '🥇';
+                    rankColor = 'text-yellow-500';
+                } else if (rank === 2) {
+                    rankIcon = '🥈';
+                    rankColor = 'text-gray-400';
+                } else if (rank === 3) {
+                    rankIcon = '🥉';
+                    rankColor = 'text-yellow-600';
+                }
+
+                const memberCard = document.createElement('div');
+                memberCard.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg card-hover';
+                memberCard.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <div class="text-2xl ${rankColor}">${rankIcon}</div>
+                        <div class="text-3xl">${member.emoji}</div>
+                        <div>
+                            <div class="font-semibold text-gray-800">${member.name}</div>
+                            <div class="text-sm text-gray-600">อันดับที่ ${rank}</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-purple-600">${member.points.toLocaleString()}</div>
+                        <div class="text-sm text-gray-600">แต้ม</div>
+                    </div>
+                `;
+                rankingList.appendChild(memberCard);
+            });
+
+            if (members.length === 0) {
+                rankingList.innerHTML = '<div class="text-center py-8 text-gray-500">ยังไม่มีสมาชิกในระบบ</div>';
+            }
+        }
+
+        // Update manage page
+        function updateManagePage() {
+            // Update member select
+            memberSelect.innerHTML = '<option value="">เลือกสมาชิก</option>';
+            members.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.id;
+                option.textContent = `${member.emoji} ${member.name}`;
+                memberSelect.appendChild(option);
+            });
+
+            // Update member list
+            memberList.innerHTML = '';
+            members.forEach(member => {
+                const memberCard = document.createElement('div');
+                memberCard.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg card-hover';
+                memberCard.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <div class="text-3xl cursor-pointer hover:scale-110 transition-transform" onclick="editMemberEmoji(${member.id})" title="คลิกเพื่อแก้ไขรูปโปรไฟล์">${member.emoji}</div>
+                        <div>
+                            <div class="font-semibold text-gray-800">${member.name}</div>
+                            <div class="text-sm text-gray-600">${member.points.toLocaleString()} แต้ม</div>
+                        </div>
+                    </div>
+                    <button onclick="deleteMember(${member.id})" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors" title="ลบสมาชิก">
+                        🗑️
+                    </button>
+                `;
+                memberList.appendChild(memberCard);
+            });
+
+            if (members.length === 0) {
+                memberList.innerHTML = '<div class="text-center py-8 text-gray-500">ยังไม่มีสมาชิกในระบบ</div>';
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('meritMembers', JSON.stringify(members));
+        }
+
+        // Initialize app
+        showPage('home');
+
+        // Make functions global for onclick handlers
+        window.deleteMember = deleteMember;
+        window.editMemberEmoji = editMemberEmoji;
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98036a5a60807b5e',t:'MTc1ODA1NzcwNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
